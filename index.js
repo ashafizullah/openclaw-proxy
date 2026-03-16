@@ -20,6 +20,7 @@ app.use('/api/gateway', auth, require('./src/routes/gateway'))
 app.use('/api/channels', auth, require('./src/routes/channels'))
 app.use('/api/chat', auth, require('./src/routes/chat'))
 app.use('/api/logs', auth, require('./src/routes/logs'))
+app.use('/api/activity', auth, require('./src/routes/activity'))
 
 const PORT = process.env.PORT || 3100
 app.listen(PORT, '0.0.0.0', () => {
