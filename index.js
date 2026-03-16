@@ -197,10 +197,17 @@ app.post('/api/chat', auth, (req, res) => {
       if (err) {
         return res.status(500).json({ error: err.message, stderr })
       }
-      // Try parse JSON response
       try {
         const json = JSON.parse(stdout.trim())
-        res.json({ response: json.reply || json.message || json.text || stdout.trim() })
+        const text = json.result?.payloads?.[0]?.text || json.reply || json.message || stdout.trim()
+        // Strip token footer (e.g. "\n\n---\n*Token: ~2.3k input*")
+        const cleaned = text.replace(/\n---\n\*Token:.*\*$/s, '').trim()
+        res.json({
+          response: cleaned,
+          model: json.result?.meta?.agentMeta?.model,
+          durationMs: json.result?.meta?.durationMs,
+          sessionId: json.result?.meta?.agentMeta?.sessionId,
+        })
       } catch {
         res.json({ response: stdout.trim() })
       }
