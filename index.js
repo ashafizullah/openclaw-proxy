@@ -189,16 +189,21 @@ app.post('/api/chat', auth, (req, res) => {
   const { message, agent = 'main' } = req.body
   if (!message) return res.status(400).json({ error: 'message required' })
 
-  // Run async to avoid blocking
   const escaped = message.replace(/'/g, "'\\''")
   exec(
-    `openclaw run --agent ${agent} --text '${escaped}' --no-stream 2>&1`,
+    `openclaw agent --agent ${agent} --message '${escaped}' --json 2>&1`,
     { timeout: 120000, env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' } },
     (err, stdout, stderr) => {
       if (err) {
         return res.status(500).json({ error: err.message, stderr })
       }
-      res.json({ response: stdout.trim() })
+      // Try parse JSON response
+      try {
+        const json = JSON.parse(stdout.trim())
+        res.json({ response: json.reply || json.message || json.text || stdout.trim() })
+      } catch {
+        res.json({ response: stdout.trim() })
+      }
     }
   )
 })
