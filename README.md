@@ -35,17 +35,15 @@ pm2 start index.js --name openclaw-proxy
 pm2 save
 ```
 
-## Endpoints
+## API Docs
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/health` | Gateway health check |
-| GET | `/api/agents` | List all agents |
-| GET | `/api/agents/:id` | Agent detail + sessions |
-| GET | `/api/gateway/status` | Gateway status + channels |
-| GET | `/api/channels` | List channels |
-| GET | `/api/logs?lines=50` | Recent gateway logs |
-| POST | `/api/chat` | Send message to agent |
+Full API documentation with interactive Swagger UI is available at:
+
+```
+http://localhost:3100/docs
+```
+
+JSON spec: `http://localhost:3100/docs.json`
 
 ## Auth
 
