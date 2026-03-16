@@ -169,4 +169,81 @@ router.delete('/history', (req, res) => {
   res.json({ ok: true })
 })
 
+/**
+ * @swagger
+ * /api/chat/sync:
+ *   get:
+ *     summary: Sync new messages from agent session JSONL to chat history
+ *     tags: [Chat]
+ *     parameters:
+ *       - in: query
+ *         name: agent
+ *         schema:
+ *           type: string
+ *           default: main
+ *     responses:
+ *       200:
+ *         description: New messages synced
+ */
+router.get('/sync', (req, res) => {
+  const agent = req.query.agent || 'main'
+
+  try {
+    const readline = require('readline')
+    const sessionsDir = path.join(process.env.HOME || '', '.openclaw', 'agents', agent, 'sessions')
+
+    if (!fs.existsSync(sessionsDir)) {
+      return res.json({ synced: 0 })
+    }
+
+    const files = fs.readdirSync(sessionsDir)
+      .filter(f => f.endsWith('.jsonl') && !f.endsWith('.lock'))
+      .map(f => ({ name: f, mtime: fs.statSync(path.join(sessionsDir, f)).mtime }))
+      .sort((a, b) => b.mtime - a.mtime)
+
+    if (!files.length) return res.json({ synced: 0 })
+
+    const content = fs.readFileSync(path.join(sessionsDir, files[0].name), 'utf-8')
+    const history = readHistory(agent)
+    const lastTime = history.length > 0
+      ? new Date(history[history.length - 1].time).getTime()
+      : 0
+
+    let synced = 0
+
+    for (const line of content.split('\n')) {
+      if (!line.trim()) continue
+      try {
+        const entry = JSON.parse(line)
+        if (entry.type !== 'message') continue
+
+        const ts = new Date(entry.timestamp).getTime()
+        if (ts <= lastTime) continue
+
+        const msg = entry.message
+        if (!msg) continue
+
+        // Only sync assistant text messages (not tool calls)
+        if (msg.role === 'assistant') {
+          const contents = Array.isArray(msg.content) ? msg.content : []
+          const text = contents.find(c => c.type === 'text')?.text
+          if (text && text.trim()) {
+            addMessage(agent, 'assistant', text.replace(/\n---\n\*Token:.*\*$/s, '').trim(), {
+              model: msg.model,
+              source: 'session_sync',
+            })
+            synced++
+          }
+        }
+      } catch {
+        // skip
+      }
+    }
+
+    res.json({ synced, total: readHistory(agent).length })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 module.exports = router
