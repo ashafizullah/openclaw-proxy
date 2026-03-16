@@ -1,11 +1,17 @@
 require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
+const swaggerUi = require('swagger-ui-express')
+const swaggerSpec = require('./src/swagger')
 const { auth } = require('./src/middleware')
 
 const app = express()
 app.use(cors())
 app.use(express.json())
+
+// Swagger docs
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.get('/docs.json', (req, res) => res.json(swaggerSpec))
 
 // Routes
 app.use('/api/health', auth, require('./src/routes/health'))
@@ -18,5 +24,6 @@ app.use('/api/logs', auth, require('./src/routes/logs'))
 const PORT = process.env.PORT || 3100
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`OpenClaw Proxy running at http://0.0.0.0:${PORT}`)
+  console.log(`Swagger docs at http://0.0.0.0:${PORT}/docs`)
   console.log(`Auth: ${process.env.API_KEY ? 'enabled' : 'disabled (set API_KEY in .env)'}`)
 })

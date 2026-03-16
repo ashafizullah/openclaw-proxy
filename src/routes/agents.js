@@ -5,7 +5,41 @@ const { getConfig, getWorkspacePath, readIdentity } = require('../helpers')
 
 const router = Router()
 
-// GET /api/agents
+/**
+ * @swagger
+ * /api/agents:
+ *   get:
+ *     summary: List all agents
+ *     tags: [Agents]
+ *     responses:
+ *       200:
+ *         description: List of agents with identity and config
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 agents:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       model:
+ *                         type: string
+ *                       workspace:
+ *                         type: string
+ *                       identity:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                           raw:
+ *                             type: string
+ *                       isDefault:
+ *                         type: boolean
+ */
 router.get('/', (req, res) => {
   try {
     const config = getConfig()
@@ -28,7 +62,25 @@ router.get('/', (req, res) => {
   }
 })
 
-// GET /api/agents/:id
+/**
+ * @swagger
+ * /api/agents/{id}:
+ *   get:
+ *     summary: Get agent detail
+ *     tags: [Agents]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Agent ID
+ *     responses:
+ *       200:
+ *         description: Agent detail with sessions
+ *       404:
+ *         description: Agent not found
+ */
 router.get('/:id', (req, res) => {
   try {
     const config = getConfig()

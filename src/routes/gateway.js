@@ -3,6 +3,32 @@ const { runCLI, getConfig } = require('../helpers')
 
 const router = Router()
 
+/**
+ * @swagger
+ * /api/gateway/status:
+ *   get:
+ *     summary: Gateway status
+ *     tags: [Gateway]
+ *     responses:
+ *       200:
+ *         description: Gateway runtime status and config
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   enum: [running, stopped, error, unknown]
+ *                 port:
+ *                   type: integer
+ *                 bind:
+ *                   type: string
+ *                 channels:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ */
 router.get('/status', (req, res) => {
   try {
     const config = getConfig()
