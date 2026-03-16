@@ -181,6 +181,13 @@ function parseEntry(entry, agentId = '') {
           args: summarizeArgs(tc.name, tc.arguments),
         })),
         model: msg.model,
+        cost: msg.usage?.cost?.total,
+        tokens: msg.usage ? {
+          input: msg.usage.input,
+          output: msg.usage.output,
+          cacheRead: msg.usage.cacheRead,
+          total: msg.usage.totalTokens,
+        } : null,
       }
     }
 
@@ -193,6 +200,12 @@ function parseEntry(entry, agentId = '') {
         content: text.substring(0, 500),
         model: msg.model,
         cost: msg.usage?.cost?.total,
+        tokens: msg.usage ? {
+          input: msg.usage.input,
+          output: msg.usage.output,
+          cacheRead: msg.usage.cacheRead,
+          total: msg.usage.totalTokens,
+        } : null,
       }
     }
 
